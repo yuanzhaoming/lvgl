@@ -60,7 +60,7 @@
 #include "lv_ex_objects.h"
 #if USE_LV_EXAMPLE != 0
 
-#include "lvgl/lvgl.h"
+#include "../lvgl.h"
 
 /*********************
  *      DEFINES

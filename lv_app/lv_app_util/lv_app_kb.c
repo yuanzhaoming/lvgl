@@ -9,8 +9,8 @@
 #include "lv_app_kb.h"
 #if USE_LV_APP_KB != 0
 
-#include "lvgl/lv_objx/lv_btnm.h"
-#include "lvgl/lv_objx/lv_ta.h"
+#include "../../lv_objx/lv_btnm.h"
+#include "../../lv_objx/lv_ta.h"
 
 /*********************
  *      DEFINES

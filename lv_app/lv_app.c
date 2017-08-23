@@ -11,7 +11,7 @@
 #if LV_APP_ENABLE != 0
 #include <stdio.h>
 #include "misc/gfx/anim.h"
-#include "lvgl/lv_obj/lv_refr.h"
+#include "../lv_obj/lv_refr.h"
 
 
 /*********************

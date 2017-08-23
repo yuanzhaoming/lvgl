@@ -13,7 +13,7 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
-#include "lvgl/lv_app/lv_app.h"
+#include "../lv_app/lv_app.h"
 
 #if LV_APP_ENABLE != 0 && USE_LV_APP_TERMINAL != 0
 

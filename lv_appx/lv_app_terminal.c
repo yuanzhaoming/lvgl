@@ -23,7 +23,7 @@
 
 #if LV_APP_ENABLE != 0 && USE_LV_APP_TERMINAL != 0
 
-#include "lvgl/lv_app/lv_app_util/lv_app_kb.h"
+#include "../lv_app/lv_app_util/lv_app_kb.h"
 #include <stdio.h>
 
 /*********************

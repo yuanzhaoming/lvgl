@@ -10,7 +10,7 @@
 #if LV_APP_ENABLE != 0 && USE_LV_APP_BENCHMARK != 0
 
 #include "../lv_app/lv_app_util/lv_app_kb.h"
-#include "lvgl/lv_obj/lv_refr.h"
+#include "../lv_obj/lv_refr.h"
 #include <stdio.h>
 
 /*********************
