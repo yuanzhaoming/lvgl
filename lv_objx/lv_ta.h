@@ -193,13 +193,6 @@ lv_obj_t * lv_ta_get_label(lv_obj_t * ta);
 uint16_t lv_ta_get_cursor_pos(lv_obj_t * ta);
 
 /**
- * Get the current cursor visibility.
- * @param ta pointer to a text area object
- * @return true: the cursor is drawn, false: the cursor is hidden
- */
-bool lv_ta_get_cursor_show(lv_obj_t * ta);
-
-/**
  * Get the current cursor type.
  * @param ta pointer to a text area object
  * @return element of 'lv_cursor_type_t'

@@ -21,6 +21,7 @@ extern "C" {
 
 #include "lv_core/lv_obj.h"
 #include "lv_core/lv_group.h"
+#include "lv_core/lv_lua.h"
 #include "lv_core/lv_vdb.h"
 
 #include "lv_themes/lv_theme.h"

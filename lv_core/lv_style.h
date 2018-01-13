@@ -141,6 +141,14 @@ lv_style_anim_create(&a);
 void lv_style_init (void);
 
 /**
+ * Create a new style. It will be allocated to the dynamic memory.
+ * You can use it instead of 'static lv_style_t my_style;'
+ * @param copy if not NULL copy this style to the new one
+ * @return pointer to the new style
+ */
+lv_style_t * lv_style_alloc(lv_style_t *copy);
+
+/**
  * Copy a style to an other
  * @param dest pointer to the destination style
  * @param src pointer to the source style
@@ -154,6 +162,11 @@ void lv_style_copy(lv_style_t * dest, const lv_style_t * src);
  */
 void lv_style_anim_create(lv_style_anim_t * anim);
 #endif
+
+static inline void lv_style_set_body_border_width(lv_style_t * style, lv_coord_t w)
+{
+    style->body.border.width = w;
+}
 
 /*************************
  *    GLOBAL VARIABLES

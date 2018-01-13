@@ -58,6 +58,9 @@ typedef struct
 	lv_cont_ext_t cont; /*Ext. of ancestor*/
 	/*New data for this type */
 	lv_action_t actions[LV_BTN_ACTION_NUM];
+#if LV_BUILD_LUA
+    const char * lua_actions[LV_BTN_ACTION_NUM];
+#endif
 	lv_style_t * styles[LV_BTN_STATE_NUM];        /*Styles in each state*/
 
     lv_btn_state_t state;                         /*Current state of the button from 'lv_btn_state_t' enum*/
@@ -117,6 +120,15 @@ void lv_btn_toggle(lv_obj_t * btn);
  */
 void lv_btn_set_action(lv_obj_t * btn, lv_btn_action_t type, lv_action_t action);
 
+#if LV_BUILD_LUA
+/**
+ * Set a Lua function to call when the button event happens. It clears the normal action.
+ * @param btn pointer to a button object
+ * @param action a string registered in 'lv_lua_actions' Lua table
+ */
+void lv_btn_set_lua_action(lv_obj_t * btn, lv_btn_action_t type, const char * action);
+#endif
+
 /**
  * Set the layout on a button
  * @param btn pointer to a button object
@@ -166,11 +178,21 @@ lv_btn_state_t lv_btn_get_state(lv_obj_t * btn);
 bool lv_btn_get_toggle(lv_obj_t * btn);
 
 /**
- * Get the release action of a button
+ * Get an action of a button
  * @param btn pointer to a button object
- * @return pointer to the release action function
+ * @return pointer to the action function
  */
 lv_action_t lv_btn_get_action(lv_obj_t * btn, lv_btn_action_t type);
+
+#if LV_BUILD_LUA
+
+/**
+ * Get a Lua action of a button
+ * @param btn pointer to a button object
+ * @return a string with the name of the action in Lua
+ */
+const char * lv_btn_get_lua_action(lv_obj_t * btn, lv_btn_action_t type);
+#endif
 
 /**
  * Get the layout of a button

@@ -205,6 +205,21 @@ void lv_style_init (void)
     lv_style_btn_ina.line.color = LV_COLOR_MAKE(0x70, 0x70, 0x70);
 }
 
+/**
+ * Create a style. It will be allocated to the dynamic memory
+ * @param copy if not NULL copy this style to the new one
+ * @return pointer to the new style
+ */
+lv_style_t * lv_style_alloc(lv_style_t *copy)
+{
+    lv_style_t * new_style = lv_mem_alloc(sizeof(lv_style_t));
+    lv_mem_assert(new_style);
+
+    if(copy) lv_style_copy(new_style, copy);
+    else lv_style_copy(new_style, &lv_style_plain);
+
+    return new_style;
+}
 
 /**
  * Copy a style to an other

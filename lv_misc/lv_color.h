@@ -269,6 +269,10 @@ static inline uint8_t lv_color_brightness(lv_color_t color)
 #define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{b8 >> 3, g8 >> 2, r8 >> 3}})
 #elif LV_COLOR_DEPTH == 24
 #define LV_COLOR_MAKE(r8, g8, b8) ((lv_color_t){{b8, g8, r8}})
+//static inline lv_color_t lv_color_make(uint8_t r8, uint8_t g8, uint8_t b8)
+//{
+//    return ((lv_color_t){{b8, g8, r8}});
+//}
 #endif
 
 #define LV_COLOR_HEX(c) LV_COLOR_MAKE(((uint32_t)((uint32_t)c >> 16) & 0xFF), \

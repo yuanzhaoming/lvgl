@@ -13,6 +13,7 @@
 #include <string.h>
 #include "lv_btn.h"
 #include "../lv_core/lv_group.h"
+#include "../lv_core/lv_lua.h"
 #include "../lv_draw/lv_draw.h"
 #include "../lv_themes/lv_theme.h"
 #include "../lv_misc/lv_area.h"
@@ -67,6 +68,12 @@ lv_obj_t * lv_btn_create(lv_obj_t * par, lv_obj_t * copy)
     ext->actions[LV_BTN_ACTION_CLICK] = NULL;
     ext->actions[LV_BTN_ACTION_LONG_PR] = NULL;
     ext->actions[LV_BTN_ACTION_LONG_PR_REPEAT] = NULL;
+
+
+    ext->lua_actions[LV_BTN_ACTION_PR] = NULL;
+    ext->lua_actions[LV_BTN_ACTION_CLICK] = NULL;
+    ext->lua_actions[LV_BTN_ACTION_LONG_PR] = NULL;
+    ext->lua_actions[LV_BTN_ACTION_LONG_PR_REPEAT] = NULL;
 
     ext->styles[LV_BTN_STATE_REL] = &lv_style_btn_rel;
     ext->styles[LV_BTN_STATE_PR] = &lv_style_btn_pr;
@@ -174,6 +181,22 @@ void lv_btn_set_action(lv_obj_t * btn, lv_btn_action_t type, lv_action_t action)
     ext->actions[type] = action;
 }
 
+#if LV_BUILD_LUA
+/**
+ * Set a Lua function to call when the button event happens. It clears the normal action.
+ * @param btn pointer to a button object
+ * @param action a string registered in 'lv_lua_actions' Lua table
+ */
+void lv_btn_set_lua_action(lv_obj_t * btn, lv_btn_action_t type, const char * action)
+{
+    if(type >= LV_BTN_ACTION_NUM) return;
+
+       lv_btn_ext_t * ext = lv_obj_get_ext_attr(btn);
+       ext->actions[type] = NULL;                       /*Clear the normal action*/
+       ext->lua_actions[type] = action;
+}
+#endif
+
 /**
  * Set a style of a button
  * @param btn pointer to a button object
@@ -235,9 +258,9 @@ bool lv_btn_get_toggle(lv_obj_t * btn)
 }
 
 /**
- * Get the release action of a button
+ * Get an action of a button
  * @param btn pointer to a button object
- * @return pointer to the release action function
+ * @return pointer to the action function
  */
 lv_action_t lv_btn_get_action(lv_obj_t * btn, lv_btn_action_t type)
 {
@@ -246,6 +269,22 @@ lv_action_t lv_btn_get_action(lv_obj_t * btn, lv_btn_action_t type)
     lv_btn_ext_t * ext = lv_obj_get_ext_attr(btn);
     return ext->actions[type];
 }
+
+#if LV_BUILD_LUA
+
+/**
+ * Get a Lua action of a button
+ * @param btn pointer to a button object
+ * @return a string with the name of the action in Lua
+ */
+const char * lv_btn_get_lua_action(lv_obj_t * btn, lv_btn_action_t type)
+{
+    if(type >= LV_BTN_ACTION_NUM) return NULL;
+
+    lv_btn_ext_t * ext = lv_obj_get_ext_attr(btn);
+    return ext->lua_actions[type] != NULL ? ext->lua_actions[type] : "";
+}
+#endif
 
 /**
  * Get a style of a button
@@ -302,9 +341,25 @@ static lv_res_t lv_btn_signal(lv_obj_t * btn, lv_signal_t sign, void * param)
         }
 
         ext->long_pr_action_executed = 0;
-        /*Call the press action, 'param' is the caller indev_proc*/
-        if(ext->actions[LV_BTN_ACTION_PR] && state != LV_BTN_STATE_INA) {
-            res = ext->actions[LV_BTN_ACTION_PR](btn);
+        /*Call the press action*/
+        if(state != LV_BTN_STATE_INA) {
+           if(ext->actions[LV_BTN_ACTION_PR]) {
+               res = ext->actions[LV_BTN_ACTION_PR](btn);
+           }
+
+           if(ext->lua_actions[LV_BTN_ACTION_PR]) {
+               lua_State *L = lv_lua_get_context();
+               lua_getglobal(L, ext->lua_actions[LV_BTN_ACTION_PR]);
+               if (!lua_isnil(L, -1)) {     /*Call the function if it is registered with this name*/
+                   lua_pushlightuserdata(L, btn);   /* push 1st argument */
+                   lua_pcall(L, 1, 1, 0);
+                   if (lua_isnumber(L, -1)) {    /*Read result*/
+                       int lua_res = lua_tonumber(L, -1);
+                       if(lua_res == LV_RES_OK ||  lua_res == LV_RES_INV) res = lua_res;        /*Save result*/
+                       lua_pop(L, 1);  /* pop returned value */
+                   }
+               }
+           }
         }
     }
     else if(sign ==  LV_SIGNAL_PRESS_LOST) {
@@ -333,8 +388,25 @@ static lv_res_t lv_btn_signal(lv_obj_t * btn, lv_signal_t sign, void * param)
                 lv_btn_set_state(btn, LV_BTN_STATE_REL);
             }
 
-            if(ext->actions[LV_BTN_ACTION_CLICK] && state != LV_BTN_STATE_INA) {
-                res = ext->actions[LV_BTN_ACTION_CLICK](btn);
+            if(state != LV_BTN_STATE_INA) {
+                if(ext->actions[LV_BTN_ACTION_CLICK]) {
+                    res = ext->actions[LV_BTN_ACTION_CLICK](btn);
+                }
+
+                if(ext->lua_actions[LV_BTN_ACTION_CLICK]) {
+                    lua_State *L = lv_lua_get_context();
+                    lua_getglobal(L, ext->lua_actions[LV_BTN_ACTION_CLICK]);
+                    if (!lua_isnil(L, -1)) {     /*Call the function if it is registered with this name*/
+                        lua_pushlightuserdata(L, btn);   /* push 1st argument */
+                        lua_pcall(L, 1, 1, 0);
+                        if (lua_isnumber(L, -1)) {    /*Read result*/
+                            int lua_res = lua_tonumber(L, -1);
+                            if(lua_res == LV_RES_OK ||  lua_res == LV_RES_INV) res = lua_res;        /*Save result*/
+                            lua_pop(L, 1);  /* pop returned value */
+                        }
+                    }
+                }
+
             }
         } else { /*If dragged change back the state*/
             if(ext->state == LV_BTN_STATE_PR) {
@@ -345,14 +417,47 @@ static lv_res_t lv_btn_signal(lv_obj_t * btn, lv_signal_t sign, void * param)
         }
     }
     else if(sign == LV_SIGNAL_LONG_PRESS) {
-            if(ext->actions[LV_BTN_ACTION_LONG_PR] && state != LV_BTN_STATE_INA) {
-                ext->long_pr_action_executed = 1;
-                res = ext->actions[LV_BTN_ACTION_LONG_PR](btn);
+            if(state != LV_BTN_STATE_INA) {
+                if(ext->actions[LV_BTN_ACTION_LONG_PR]) {
+                    ext->long_pr_action_executed = 1;
+                    res = ext->actions[LV_BTN_ACTION_LONG_PR](btn);
+                }
+
+                if(ext->lua_actions[LV_BTN_ACTION_LONG_PR]) {
+                    lua_State *L = lv_lua_get_context();
+                    lua_getglobal(L, ext->lua_actions[LV_BTN_ACTION_LONG_PR]);
+                    if (!lua_isnil(L, -1)) {     /*Call the function if it is registered with this name*/
+                        lua_pushlightuserdata(L, btn);   /* push 1st argument */
+                        lua_pcall(L, 1, 1, 0);
+                        if (lua_isnumber(L, -1)) {    /*Read result*/
+                            int lua_res = lua_tonumber(L, -1);
+                            if(lua_res == LV_RES_OK ||  lua_res == LV_RES_INV) res = lua_res;        /*Save result*/
+                            lua_pop(L, 1);  /* pop returned value */
+                        }
+                    }
+                }
+
             }
     }
     else if(sign == LV_SIGNAL_LONG_PRESS_REP) {
-        if(ext->actions[LV_BTN_ACTION_LONG_PR_REPEAT] && state != LV_BTN_STATE_INA) {
-            res = ext->actions[LV_BTN_ACTION_LONG_PR_REPEAT](btn);
+        if(state != LV_BTN_STATE_INA) {
+            if(ext->actions[LV_BTN_ACTION_LONG_PR_REPEAT]) {
+                res = ext->actions[LV_BTN_ACTION_LONG_PR_REPEAT](btn);
+            }
+
+            if(ext->lua_actions[LV_BTN_ACTION_LONG_PR_REPEAT]) {
+                lua_State *L = lv_lua_get_context();
+                lua_getglobal(L, ext->lua_actions[LV_BTN_ACTION_LONG_PR_REPEAT]);
+                if (!lua_isnil(L, -1)) {     /*Call the function if it is registered with this name*/
+                    lua_pushlightuserdata(L, btn);   /* push 1st argument */
+                    lua_pcall(L, 1, 1, 0);
+                    if (lua_isnumber(L, -1)) {    /*Read result*/
+                        int lua_res = lua_tonumber(L, -1);
+                        if(lua_res == LV_RES_OK ||  lua_res == LV_RES_INV) res = lua_res;        /*Save result*/
+                        lua_pop(L, 1);  /* pop returned value */
+                    }
+                }
+            }
         }
     }
     else if(sign == LV_SIGNAL_CONTROLL) {
